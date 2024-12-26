@@ -12,6 +12,9 @@ contract VotingSystem {
     Proposal[] public proposals;
     address public admin;
 
+    event ProposalCreated(uint256 proposalId, string description);
+    event Voted(uint256 proposalId, address voter, bool vote);
+
     modifier onlyAdmin() {
         require(msg.sender == admin, "Not the admin");
         _;
@@ -24,6 +27,7 @@ contract VotingSystem {
     function createProposal(string memory _description) external onlyAdmin {
         Proposal storage newProposal = proposals.push();
         newProposal.description = _description;
+        emit ProposalCreated(proposals.length - 1, _description);
     }
 
     function voteOnProposal(uint256 _proposalId, bool _voteYes) external {
@@ -37,6 +41,7 @@ contract VotingSystem {
         } else {
             proposal.noVotes++;
         }
+        emit Voted(_proposalId, msg.sender, _voteYes);
     }
 
     function getProposal(uint256 _proposalId)
@@ -47,5 +52,9 @@ contract VotingSystem {
         require(_proposalId < proposals.length, "Invalid proposal ID");
         Proposal storage proposal = proposals[_proposalId];
         return (proposal.description, proposal.yesVotes, proposal.noVotes);
+    }
+
+    function changeAdmin(address newAdmin) external onlyAdmin {
+        admin = newAdmin;
     }
 }
